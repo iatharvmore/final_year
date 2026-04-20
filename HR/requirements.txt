@@ -1,0 +1,10 @@
+streamlit
+pandas
+langchain
+langchain-google-genai
+python-dotenv
+python-docx
+pypdf
+scikit-learn
+openpyxl
+tqdm
