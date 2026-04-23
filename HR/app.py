@@ -43,13 +43,7 @@ def render_hr_agent(api_key=""):
     </div>
     """, unsafe_allow_html=True)
     
-    st.info("⚙️ Model Configuration")
-    model_choice = st.selectbox(
-        "Select Model",
-        ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-pro"],
-        index=2,
-        key="hr_model_choice"
-    )
+    model_choice = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
     col1, col2 = st.columns([1, 1], gap="large")
 

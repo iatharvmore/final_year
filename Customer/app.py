@@ -11,7 +11,8 @@ def load_knowledge_base():
             return json.load(f)
     return None
 
-def run_customer_agent(api_key, data, model_name="gemini-1.5-flash"):
+def run_customer_agent(api_key, data):
+    model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(model_name)
     prompt = f"""
@@ -29,7 +30,8 @@ def run_customer_agent(api_key, data, model_name="gemini-1.5-flash"):
     response = model.generate_content(prompt)
     return response.text
 
-def handle_query(api_key, query, kb_data, model_name="gemini-1.5-flash"):
+def handle_query(api_key, query, kb_data):
+    model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(model_name)
     
@@ -66,13 +68,7 @@ def render_customer_agent(api_key=""):
         st.warning("Please configure your Gemini API Key in the global configuration.")
         return
 
-    st.info("⚙️ Model Configuration")
-    model_choice = st.selectbox(
-        "Select Model",
-        ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-pro"],
-        index=2, # Default to 2.5 flash as requested
-        key="customer_model_choice"
-    )
+    model_choice = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
     # Tabs for different functionalities
     tab1, tab2 = st.tabs(["📊 Sentiment Analysis", "💬 Query Handling Agent"])
@@ -96,7 +92,7 @@ def render_customer_agent(api_key=""):
         if st.button("💬 Analyze Customer Sentiment", key="customer_analyze_btn"):
             with st.spinner("AI Customer Agent is analyzing..."):
                 try:
-                    insights = run_customer_agent(api_key, dummy_data.to_string(), model_name=model_choice)
+                    insights = run_customer_agent(api_key, dummy_data.to_string())
                     st.markdown("### Customer Experience Insights")
                     st.markdown(insights)
                 except Exception as e:

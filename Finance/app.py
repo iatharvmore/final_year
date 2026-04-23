@@ -2,63 +2,95 @@ import streamlit as st
 import pandas as pd
 import google.generativeai as genai
 
-def run_finance_agent(api_key, data):
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-pro')
-    prompt = f"""
-    You are an AI Financial Forecaster and Analyst. Review the following corporate financial data (Q1 vs Q2).
-    Identify areas of budget overrun, forecast next quarter revenue, and provide cost-cutting recommendations.
-    
-    Financial Data:
-    {data}
-    
-    Format response:
-    1. Financial Executive Summary
-    2. Variance Analysis (Q1 vs Q2)
-    3. Actionable Cost-Saving Measures
-    """
-    response = model.generate_content(prompt)
-    return response.text
+from Finance.modules.forecasting import forecast
+from Finance.modules.anomaly import detect_anomaly
+from Finance.modules.variance import variance
+from Finance.modules.recommendations import recommend
+from Finance.modules.llm import generate_summary, llm_insights, chat_with_data
 
 def render_finance_agent(api_key=""):
-    st.markdown("""
-    <div style="padding: 2rem; background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%); color: white; border-radius: 10px; margin-bottom: 2rem; text-align: center;">
-        <h1>💰 Finance Agent Dashboard</h1>
-        <p>Automated financial analysis, variance tracking, and cost optimization via AI.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.title("💰 AI Finance Agent")
+    st.write("Automated financial analysis and chat.")
 
     if not api_key:
         st.warning("Please configure your Gemini API Key in the global configuration.")
         return
 
-    st.subheader("Quarterly Financial Overview")
-    
-    # Dummy data
-    dummy_finance_data = pd.DataFrame({
-        "Department": ["Engineering", "Sales", "Marketing", "HR", "Operations"],
-        "Q1_Budget_$": [500000, 300000, 200000, 100000, 150000],
-        "Q1_Actual_$": [480000, 320000, 210000, 95000, 160000],
-        "Q2_Budget_$": [520000, 310000, 200000, 105000, 150000],
-        "Q2_Actual_$": [550000, 290000, 250000, 100000, 180000],
-        "Variance_Trend": ["Over by 30k", "Under by 20k", "Over by 50k", "Under by 5k", "Over by 30k"]
-    })
-    
-    st.dataframe(dummy_finance_data, use_container_width=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Total Q2 Budget", "$1,285,000", delta="+$25,000 from Q1")
-    with col2:
-        st.metric("Total Q2 Actual", "$1,370,000", delta="+$85,000 variance", delta_color="inverse")
-    
-    st.divider()
-    
-    if st.button("📊 Generate Financial Forecast & Analysis", key="finance_analyze_btn"):
-        with st.spinner("Finance Agent is calculating forecast and variances..."):
-            try:
-                insights = run_finance_agent(api_key, dummy_finance_data.to_string())
-                st.markdown("### Financial Analysis & Recommendations")
-                st.markdown(insights)
-            except Exception as e:
-                st.error(f"Error: {e}")
+    # Configure GenAI
+    genai.configure(api_key=api_key)
+
+    uploaded_file = st.file_uploader("Upload CSV", type=["csv"], key="fin_uploader")
+
+    if uploaded_file:
+        df = pd.read_csv(uploaded_file)
+    else:
+        try:
+            df = pd.read_csv("Finance/data/sample_finance.csv")
+        except FileNotFoundError:
+            st.error("Sample dataset not found.")
+            return
+
+    df['date'] = pd.to_datetime(df['date'])
+
+    # Create Sub-Tabs
+    tab_dashboard, tab_chat = st.tabs(["📊 Dashboard & Analytics", "💬 Chat with Data"])
+
+    with tab_dashboard:
+        st.subheader("📊 Data & Trend")
+        
+        # Use Streamlit's native line chart instead of matplotlib
+        chart_data = df.set_index('date')[['expense', 'budget']]
+        st.line_chart(chart_data)
+
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("📈 Forecast")
+            st.write(forecast(df))
+            
+            var_df = variance(df.copy())
+            an_df = detect_anomaly(var_df.copy())
+            
+            st.subheader("🔔 Alerts")
+            st.dataframe(var_df[var_df['variance'].abs() > 1000], use_container_width=True)
+
+        with col2:
+            st.subheader("🤖 AI Insights")
+            summary = generate_summary(an_df)
+            if st.button("Generate AI Insights", key="fin_insights_btn"):
+                with st.spinner("Generating..."):
+                    st.info(llm_insights(summary))
+                    
+            st.subheader("💡 Recommendations")
+            for r in recommend(an_df):
+                st.write("• " + r)
+
+    with tab_chat:
+        # We still need the summary variable for the chat context if it wasn't defined above yet
+        # Since it is defined inside tab_dashboard context, let's redefine or ensure it is available globally.
+        var_df_chat = variance(df.copy())
+        an_df_chat = detect_anomaly(var_df_chat.copy())
+        chat_summary = generate_summary(an_df_chat)
+
+        st.subheader("💬 Finance Chatbot")
+        st.write("Ask questions about your financial data, forecasts, and variance alerts.")
+
+        if "fin_chat_history" not in st.session_state:
+            st.session_state.fin_chat_history = []
+
+        # Display chat messages
+        for message in st.session_state.fin_chat_history:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+        # Chat input
+        if prompt := st.chat_input("Ask about your finances (e.g. why is variance high?)..."):
+            st.chat_message("user").markdown(prompt)
+            st.session_state.fin_chat_history.append({"role": "user", "content": prompt})
+
+            with st.spinner("Thinking..."):
+                response = chat_with_data(prompt, chat_summary)
+                
+            with st.chat_message("assistant"):
+                st.markdown(response)
+            st.session_state.fin_chat_history.append({"role": "assistant", "content": response})

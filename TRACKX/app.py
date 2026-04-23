@@ -6,7 +6,9 @@ from TRACKX.data import generate_synthetic_data
 
 def run_agent_orchestration(api_key, data):
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-pro')
+    import os
+    model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model = genai.GenerativeModel(model_name)
     prompt = f"""
     You are TrackX, an enterprise performance intelligence AI agent. 
     Analyze the following holistic performance data spanning HRMS, ERP, and CRM domains. 
