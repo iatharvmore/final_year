@@ -1,0 +1,57 @@
+{
+  "knowledge_base": [
+    {
+      "id": "KB-001",
+      "topic": "Billing",
+      "complexity": "Basic",
+      "intent": "update_payment_method",
+      "keywords": ["credit card", "payment", "billing info", "visa", "mastercard"],
+      "response": "You can update your payment method in the 'Billing' section of your profile settings. We support all major credit cards and PayPal."
+    },
+    {
+      "id": "KB-002",
+      "topic": "Billing",
+      "complexity": "Complex",
+      "intent": "billing_discrepancy",
+      "keywords": ["overcharged", "wrong amount", "refund", "double charge"],
+      "response": "I'm sorry to hear about the billing discrepancy. To help me investigate, please provide your invoice number or the date of the transaction. For your security, please do not share full credit card numbers here."
+    },
+    {
+      "id": "KB-003",
+      "topic": "Technical",
+      "complexity": "Basic",
+      "intent": "system_status",
+      "keywords": ["uptime", "is it down", "server status", "online"],
+      "response": "Our systems currently maintain a 99.9% uptime. You can check our real-time status dashboard at https://status.example.com for any ongoing maintenance or outages."
+    },
+    {
+      "id": "KB-004",
+      "topic": "Technical",
+      "complexity": "Complex",
+      "intent": "api_error",
+      "keywords": ["504 error", "gateway timeout", "api failing", "endpoint"],
+      "response": "A 504 Gateway Timeout usually indicates a server-side processing delay. I am escalating this to our infrastructure team for immediate review. If you have an error log or the specific endpoint URL, please share it to expedite the process."
+    },
+    {
+      "id": "KB-005",
+      "topic": "Account",
+      "complexity": "Basic",
+      "intent": "password_reset",
+      "keywords": ["forgot password", "reset link", "login issue", "change password"],
+      "response": "To reset your password, click the 'Forgot Password' link on the login page. You will receive an email with instructions to create a new secure password."
+    },
+    {
+      "id": "KB-006",
+      "topic": "Account",
+      "complexity": "Complex",
+      "intent": "account_recovery",
+      "keywords": ["hacked", "locked out", "no access", "recovery"],
+      "response": "Account security is our top priority. I'll need to verify your identity before we can proceed with account recovery. Please expect an email at your registered address with verification steps shortly."
+    }
+  ],
+  "escalation_policy": {
+    "triggers": ["angry_sentiment", "complex_technical_issue", "legal_threat", "human_request"],
+    "target": "human_support_queue"
+  },
+  "out_of_scope_response": "I'm specialized in account, billing, and technical support for our platform. I cannot assist with that specific request, but I'm happy to help with any platform-related issues!"
+}
