@@ -118,9 +118,6 @@ def render_summary():
     with col4:
         st.error("#### Financial Analytics\nBudget variance and predictive forecasting.")
 
-    st.divider()
-    gather_agent_data()
-
 def main():
     st.set_page_config(page_title="Enterprise OS", layout="wide")
     load_dotenv()

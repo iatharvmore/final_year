@@ -59,7 +59,7 @@ def handle_query(api_key, query, kb_data):
 def render_customer_agent(api_key=""):
     st.markdown("""
     <div style="padding: 2rem; background: linear-gradient(90deg, #f2994a 0%, #f2c94c 100%); color: white; border-radius: 10px; margin-bottom: 2rem; text-align: center;">
-        <h1>🤝 Customer Agent Dashboard</h1>
+        <h1>Customer Agent Dashboard</h1>
         <p>AI-driven customer experience and support ticket analysis platform.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -71,7 +71,7 @@ def render_customer_agent(api_key=""):
     model_choice = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
     # Tabs for different functionalities
-    tab1, tab2 = st.tabs(["📊 Sentiment Analysis", "💬 Query Handling Agent"])
+    tab1, tab2 = st.tabs(["Sentiment Analysis", "Query Handling Agent"])
 
     with tab1:
         st.subheader("Recent Customer Feedback")
@@ -89,7 +89,7 @@ def render_customer_agent(api_key=""):
         
         st.divider()
         
-        if st.button("💬 Analyze Customer Sentiment", key="customer_analyze_btn"):
+        if st.button("Analyze Customer Sentiment", key="customer_analyze_btn"):
             with st.spinner("AI Customer Agent is analyzing..."):
                 try:
                     insights = run_customer_agent(api_key, dummy_data.to_string())
@@ -99,7 +99,7 @@ def render_customer_agent(api_key=""):
                     st.error(f"Error: {e}")
 
     with tab2:
-        st.subheader("🤖 Interactive Support Chatbot")
+        st.subheader("Interactive Support Chatbot")
         st.info("Ask questions about billing, technical issues, or account management. The agent uses the Knowledge Base to assist you.")
         
         kb_data = load_knowledge_base()
@@ -121,13 +121,13 @@ def render_customer_agent(api_key=""):
             st.caption("Suggested Questions:")
             cols = st.columns(3)
             with cols[0]:
-                if st.button("💳 Update Payment", use_container_width=True):
+                if st.button("Update Payment", use_container_width=True):
                     prompt_suggested = "How do I update my credit card?"
             with cols[1]:
-                if st.button("⚠️ API 504 Error", use_container_width=True):
+                if st.button("API 504 Error", use_container_width=True):
                     prompt_suggested = "The API is returning a 504 error."
             with cols[2]:
-                if st.button("🔑 Reset Password", use_container_width=True):
+                if st.button("Reset Password", use_container_width=True):
                     prompt_suggested = "How do I reset my password?"
             
             # React to user input

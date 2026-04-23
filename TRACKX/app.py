@@ -30,7 +30,7 @@ def run_agent_orchestration(api_key, data):
 def render_trackx_agent(api_key=""):
     st.markdown("""
     <div style="padding: 2rem; background: linear-gradient(90deg, #1fa2ff 0%, #12d8fa 50%, #a6ffcb 100%); color: #000; border-radius: 10px; margin-bottom: 2rem; text-align: center;">
-        <h1>📈 TrackX Agent Dashboard</h1>
+        <h1>TrackX Agent Dashboard</h1>
         <p>Distributed AI agent framework designed to monitor employee performance across enterprise data sources (HRMS, ERP, CRM).</p>
     </div>
     """, unsafe_allow_html=True)
@@ -56,7 +56,7 @@ def render_trackx_agent(api_key=""):
     st.divider()
     st.subheader("Performance Intelligence Agent")
     
-    if st.button("🧠 Generate Insights & Recommendations", type="primary", key="trackx_generate_btn"):
+    if st.button("Generate Insights & Recommendations", type="primary", key="trackx_generate_btn"):
         with st.spinner("TrackX Agents are analyzing HRMS, ERP, and CRM data..."):
             try:
                 insights = run_agent_orchestration(api_key, merged_df.to_string())

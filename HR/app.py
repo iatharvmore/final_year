@@ -38,7 +38,7 @@ def render_hr_agent(api_key=""):
 
     st.markdown("""
     <div class="header-container-hr">
-        <h1>🚀 HR Agent: Resume Matcher</h1>
+        <h1>HR Agent: Resume Matcher</h1>
         <p>Rank and analyze resumes against your job description using Google Gemini</p>
     </div>
     """, unsafe_allow_html=True)
@@ -48,11 +48,11 @@ def render_hr_agent(api_key=""):
     col1, col2 = st.columns([1, 1], gap="large")
 
     with col1:
-        st.subheader("📋 Job Description")
+        st.subheader("Job Description")
         jd_text = st.text_area("Paste the job description here...", height=300, key="hr_jd_text")
 
     with col2:
-        st.subheader("📁 Upload Resumes")
+        st.subheader("Upload Resumes")
         uploaded_files = st.file_uploader(
             "Upload PDF or DOCX resumes",
             type=["pdf", "docx"],
@@ -63,7 +63,7 @@ def render_hr_agent(api_key=""):
         if uploaded_files:
             st.success(f"{len(uploaded_files)} resumes uploaded successfully!")
 
-    if st.button("🔍 Analyze and Rank Resumes", key="hr_analyze_btn"):
+    if st.button("Analyze and Rank Resumes", key="hr_analyze_btn"):
         if not api_key:
             st.error("Please provide a Gemini API Key in the global configuration.")
         elif not jd_text:
@@ -101,7 +101,7 @@ def render_hr_agent(api_key=""):
         valid_results = [r for r in results if r.get('Rank', -1) != -1]
         
         st.divider()
-        st.subheader("📊 Analysis Results")
+        st.subheader("Analysis Results")
         
         s1, s2, s3 = st.columns(3)
         with s1:
@@ -115,7 +115,7 @@ def render_hr_agent(api_key=""):
         st.write("")
         df = pd.DataFrame(results)
         
-        tab1, tab2 = st.tabs(["🏆 Rankings", "📝 Detailed Extraction"])
+        tab1, tab2 = st.tabs(["Rankings", "Detailed Extraction"])
         
         with tab1:
             display_df = df[['Rank', 'File', 'Cosine Similarity']].copy()
@@ -127,7 +127,7 @@ def render_hr_agent(api_key=""):
             df.to_excel(output_file, index=False)
             with open(output_file, "rb") as f:
                 st.download_button(
-                    label="📥 Download Results as Excel",
+                    label="Download Results as Excel",
                     data=f,
                     file_name="HR_Resume_Analysis.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -139,10 +139,10 @@ def render_hr_agent(api_key=""):
                 with st.expander(f"Resumé: {row['File']} (Rank: {row['Rank']})"):
                     c1, c2 = st.columns(2)
                     with c1:
-                        st.markdown("**🎓 Education**")
+                        st.markdown("**Education**")
                         st.info(row.get('Education', 'N/A'))
                     with c2:
-                        st.markdown("**💼 Experience**")
+                        st.markdown("**Experience**")
                         st.info(row.get('Experience', 'N/A'))
-                    st.markdown("**🏗️ Projects**")
+                    st.markdown("**Projects**")
                     st.info(row.get('Projects', 'N/A'))
