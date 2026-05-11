@@ -12,3 +12,7 @@ google-generativeai
 plotly
 numpy
 matplotlib
+faiss-cpu
+langchain-community
+langgraph
+pydantic>=2.0

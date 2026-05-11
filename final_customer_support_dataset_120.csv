@@ -1,0 +1,121 @@
+TicketID,Customer,Issue,Status,Sentiment,Priority
+TCK-101,Michael Brown,Unable to reset password,Closed,Frustrated,Low
+TCK-102,Alice Smith,Email notifications not received,Open,Neutral,Medium
+TCK-103,Alice Smith,Database connection timeout,Open,Satisfied,Medium
+TCK-104,Mia Thomas,Unable to reset password,Open,Frustrated,High
+TCK-105,Emma Johnson,Unable to reset password,Open,Frustrated,Critical
+TCK-106,Daniel Lee,Profile update not saving,Open,Neutral,High
+TCK-107,Emma Johnson,Profile update not saving,Open,Neutral,Medium
+TCK-108,Mia Thomas,Unable to reset password,Closed,Frustrated,Critical
+TCK-109,Olivia Martin,Unable to reset password,Closed,Neutral,Low
+TCK-110,Alice Smith,Slow dashboard loading,Open,Neutral,High
+TCK-111,Michael Brown,Order tracking unavailable,Closed,Frustrated,Medium
+TCK-112,James Anderson,Database connection timeout,Pending,Frustrated,Medium
+TCK-113,Sophia Taylor,Database connection timeout,Pending,Frustrated,High
+TCK-114,John Doe,Email notifications not received,Open,Frustrated,Critical
+TCK-115,David Wilson,Payment gateway failed,Pending,Satisfied,Medium
+TCK-116,John Doe,Slow dashboard loading,Open,Satisfied,Critical
+TCK-117,Michael Brown,File upload failed,Pending,Frustrated,Medium
+TCK-118,Emma Johnson,Unable to reset password,Pending,Satisfied,High
+TCK-119,James Anderson,Database connection timeout,Closed,Neutral,Low
+TCK-120,Sophia Taylor,Unable to reset password,Closed,Satisfied,Low
+TCK-121,Sophia Taylor,Login timeout error,Closed,Satisfied,Low
+TCK-122,Michael Brown,File upload failed,Open,Frustrated,Critical
+TCK-123,Sophia Taylor,Login timeout error,Pending,Neutral,Low
+TCK-124,David Wilson,Email notifications not received,Pending,Satisfied,Medium
+TCK-125,Michael Brown,App crashes on startup,Open,Satisfied,High
+TCK-126,Michael Brown,Payment gateway failed,Open,Satisfied,Low
+TCK-127,David Wilson,Payment gateway failed,Closed,Satisfied,Medium
+TCK-128,Emma Johnson,Order tracking unavailable,Open,Neutral,Critical
+TCK-129,Alice Smith,Database connection timeout,Closed,Frustrated,High
+TCK-130,Olivia Martin,Unable to reset password,Closed,Satisfied,Medium
+TCK-131,Michael Brown,Payment gateway failed,Open,Neutral,Low
+TCK-132,John Doe,Unable to reset password,Closed,Neutral,Low
+TCK-133,Mia Thomas,Email notifications not received,Pending,Neutral,Critical
+TCK-134,Olivia Martin,Email notifications not received,Open,Satisfied,Medium
+TCK-135,Sophia Taylor,Database connection timeout,Open,Frustrated,High
+TCK-136,Olivia Martin,Email notifications not received,Open,Neutral,Medium
+TCK-137,John Doe,App crashes on startup,Pending,Frustrated,Critical
+TCK-138,Mia Thomas,Database connection timeout,Open,Satisfied,Low
+TCK-139,David Wilson,Slow dashboard loading,Pending,Satisfied,Low
+TCK-140,James Anderson,Database connection timeout,Pending,Frustrated,Medium
+TCK-141,Olivia Martin,Profile update not saving,Open,Frustrated,High
+TCK-142,Mia Thomas,Payment gateway failed,Pending,Satisfied,Critical
+TCK-143,Emma Johnson,Login timeout error,Open,Neutral,Medium
+TCK-144,Mia Thomas,File upload failed,Closed,Satisfied,Low
+TCK-145,Emma Johnson,Profile update not saving,Open,Frustrated,Low
+TCK-146,Emma Johnson,App crashes on startup,Pending,Satisfied,Critical
+TCK-147,Mia Thomas,Database connection timeout,Closed,Satisfied,Medium
+TCK-148,Emma Johnson,Payment gateway failed,Pending,Satisfied,Low
+TCK-149,Emma Johnson,Profile update not saving,Open,Frustrated,Low
+TCK-150,Olivia Martin,Login timeout error,Open,Neutral,Low
+TCK-151,Olivia Martin,App crashes on startup,Open,Satisfied,Low
+TCK-152,Olivia Martin,Login timeout error,Closed,Satisfied,Critical
+TCK-153,James Anderson,Email notifications not received,Open,Neutral,High
+TCK-154,John Doe,Payment gateway failed,Closed,Frustrated,High
+TCK-155,John Doe,Order tracking unavailable,Open,Satisfied,Low
+TCK-156,Olivia Martin,Order tracking unavailable,Pending,Neutral,Medium
+TCK-157,Alice Smith,App crashes on startup,Closed,Neutral,Medium
+TCK-158,Daniel Lee,Profile update not saving,Pending,Neutral,Low
+TCK-159,John Doe,Payment gateway failed,Open,Neutral,Medium
+TCK-160,Daniel Lee,Unable to reset password,Pending,Frustrated,Critical
+TCK-161,Mia Thomas,Unable to reset password,Closed,Frustrated,Low
+TCK-162,Alice Smith,Database connection timeout,Pending,Frustrated,High
+TCK-163,Emma Johnson,Payment gateway failed,Closed,Satisfied,Low
+TCK-164,John Doe,Database connection timeout,Pending,Frustrated,High
+TCK-165,Alice Smith,Profile update not saving,Open,Satisfied,High
+TCK-166,Daniel Lee,Order tracking unavailable,Pending,Neutral,Critical
+TCK-167,Mia Thomas,Login timeout error,Pending,Frustrated,High
+TCK-168,Mia Thomas,Order tracking unavailable,Open,Frustrated,Low
+TCK-169,Alice Smith,Payment gateway failed,Closed,Frustrated,Low
+TCK-170,Emma Johnson,Login timeout error,Open,Neutral,High
+TCK-171,Emma Johnson,Slow dashboard loading,Pending,Satisfied,Critical
+TCK-172,John Doe,Database connection timeout,Open,Frustrated,High
+TCK-173,Emma Johnson,Order tracking unavailable,Open,Neutral,High
+TCK-174,John Doe,Order tracking unavailable,Closed,Frustrated,High
+TCK-175,John Doe,Database connection timeout,Closed,Satisfied,Low
+TCK-176,Michael Brown,Payment gateway failed,Closed,Satisfied,High
+TCK-177,John Doe,File upload failed,Closed,Satisfied,Medium
+TCK-178,James Anderson,Payment gateway failed,Pending,Neutral,Critical
+TCK-179,David Wilson,Profile update not saving,Closed,Satisfied,Low
+TCK-180,Michael Brown,App crashes on startup,Pending,Frustrated,Low
+TCK-181,Emma Johnson,Email notifications not received,Pending,Frustrated,High
+TCK-182,Mia Thomas,Payment gateway failed,Closed,Neutral,Low
+TCK-183,Olivia Martin,App crashes on startup,Closed,Satisfied,High
+TCK-184,Sophia Taylor,Email notifications not received,Pending,Neutral,Critical
+TCK-185,Mia Thomas,Unable to reset password,Open,Frustrated,High
+TCK-186,Emma Johnson,Unable to reset password,Open,Satisfied,Critical
+TCK-187,Sophia Taylor,Login timeout error,Pending,Satisfied,Critical
+TCK-188,Daniel Lee,Payment gateway failed,Closed,Satisfied,Medium
+TCK-189,Alice Smith,Login timeout error,Open,Neutral,Medium
+TCK-190,Olivia Martin,File upload failed,Open,Satisfied,Critical
+TCK-191,Sophia Taylor,App crashes on startup,Open,Satisfied,Critical
+TCK-192,John Doe,Database connection timeout,Pending,Satisfied,Medium
+TCK-193,Alice Smith,Order tracking unavailable,Pending,Neutral,High
+TCK-194,Emma Johnson,Slow dashboard loading,Open,Neutral,Medium
+TCK-195,Daniel Lee,Database connection timeout,Open,Satisfied,Critical
+TCK-196,Sophia Taylor,Order tracking unavailable,Closed,Neutral,Medium
+TCK-197,Mia Thomas,Unable to reset password,Pending,Neutral,Low
+TCK-198,James Anderson,Slow dashboard loading,Open,Neutral,Critical
+TCK-199,Mia Thomas,File upload failed,Pending,Neutral,Critical
+TCK-200,Sophia Taylor,Unable to reset password,Open,Satisfied,High
+TCK-201,Sophia Taylor,Order tracking unavailable,Closed,Frustrated,High
+TCK-202,Olivia Martin,File upload failed,Open,Frustrated,Medium
+TCK-203,Emma Johnson,Slow dashboard loading,Closed,Neutral,Low
+TCK-204,Mia Thomas,Unable to reset password,Open,Frustrated,Medium
+TCK-205,Michael Brown,Unable to reset password,Pending,Neutral,Critical
+TCK-206,Mia Thomas,Database connection timeout,Pending,Frustrated,Low
+TCK-207,Michael Brown,Login timeout error,Open,Satisfied,Medium
+TCK-208,John Doe,Email notifications not received,Closed,Neutral,Low
+TCK-209,Mia Thomas,Slow dashboard loading,Pending,Satisfied,Critical
+TCK-210,Mia Thomas,Profile update not saving,Pending,Neutral,Low
+TCK-211,David Wilson,Order tracking unavailable,Open,Frustrated,Medium
+TCK-212,Daniel Lee,Order tracking unavailable,Closed,Frustrated,Critical
+TCK-213,Mia Thomas,Email notifications not received,Pending,Frustrated,High
+TCK-214,Daniel Lee,Profile update not saving,Open,Frustrated,High
+TCK-215,Alice Smith,Unable to reset password,Pending,Neutral,Critical
+TCK-216,Sophia Taylor,Profile update not saving,Closed,Neutral,Low
+TCK-217,James Anderson,File upload failed,Pending,Neutral,High
+TCK-218,David Wilson,File upload failed,Closed,Frustrated,High
+TCK-219,Emma Johnson,Email notifications not received,Pending,Satisfied,High
+TCK-220,John Doe,Login timeout error,Pending,Neutral,Medium
