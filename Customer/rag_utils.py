@@ -80,9 +80,32 @@ def load_tickets():
     conn.close()
     return [{"TicketID": row[0], "Customer": row[1], "Issue": row[2], "Status": row[3], "Sentiment": row[4]} for row in rows]
 
+from langchain_core.embeddings import Embeddings
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+class LocalOfflineEmbeddings(Embeddings):
+    def __init__(self):
+        self.vectorizer = TfidfVectorizer(max_features=512, stop_words='english')
+        self._fitted = False
+        self.vectorizer.fit(["employee performance budget variance support ticket resume experience candidate client sales"])
+        
+    def fit_on_texts(self, texts):
+        if texts:
+            self.vectorizer.fit(texts)
+            self._fitted = True
+            
+    def embed_documents(self, texts):
+        if not self._fitted and texts:
+            self.fit_on_texts(texts)
+        vectors = self.vectorizer.transform(texts).toarray()
+        return [v.tolist() for v in vectors]
+        
+    def embed_query(self, text):
+        vectors = self.vectorizer.transform([text]).toarray()
+        return vectors[0].tolist()
+
 def get_embeddings():
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-    return GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-2", google_api_key=api_key)
+    return LocalOfflineEmbeddings()
 
 def load_or_create_faiss():
     embeddings = get_embeddings()
@@ -103,8 +126,21 @@ def process_documents(documents: list[Document]):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     docs = text_splitter.split_documents(documents)
     
-    vector_store = load_or_create_faiss()
-    vector_store.add_documents(docs)
+    embeddings = get_embeddings()
+    try:
+        vector_store = load_or_create_faiss()
+        vector_store.add_documents(docs)
+    except (AssertionError, Exception) as e:
+        print(f"FAISS index mismatch or error ({e}). Clearing and rebuilding fresh index...")
+        import shutil
+        if os.path.exists(FAISS_PATH):
+            try:
+                shutil.rmtree(FAISS_PATH)
+            except Exception as delete_err:
+                print(f"Failed to clear FAISS path: {delete_err}")
+        # Initialize brand new FAISS store
+        vector_store = FAISS.from_documents(docs, embeddings)
+        
     save_faiss(vector_store)
     return len(docs)
 

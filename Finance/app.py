@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 import pandas as pd
 import google.generativeai as genai
 import uuid
@@ -33,7 +34,10 @@ def render_finance_agent(api_key=""):
         df = pd.read_csv(uploaded_file)
     else:
         try:
-            df = pd.read_csv("Finance/data/sample_finance.csv")
+            if os.path.exists("corporate_financial_analytics_data.csv"):
+                df = pd.read_csv("corporate_financial_analytics_data.csv")
+            else:
+                df = pd.read_csv("Finance/data/sample_finance.csv")
         except FileNotFoundError:
             st.error("Sample dataset not found.")
             return
@@ -50,7 +54,7 @@ def render_finance_agent(api_key=""):
         return
 
     try:
-        df['date'] = pd.to_datetime(df['date'])
+        df['date'] = pd.to_datetime(df['date'], dayfirst=True)
     except Exception as e:
         st.error(f"Error parsing date column: {e}")
         return
@@ -59,6 +63,19 @@ def render_finance_agent(api_key=""):
     tab_dashboard, tab_chat = st.tabs(["Dashboard & Analytics", "Chat with Data"])
 
     with tab_dashboard:
+        # Show Metrics
+        total_txns = len(df)
+        total_expense = df['expense'].sum()
+        total_budget = df['budget'].sum()
+        
+        m1, m2, m3 = st.columns(3)
+        with m1:
+            st.metric("Total Transactions", f"{total_txns:,}")
+        with m2:
+            st.metric("Total Expenses", f"${total_expense:,.2f}")
+        with m3:
+            st.metric("Total Budget Pool", f"${total_budget:,.2f}")
+            
         st.subheader("Data & Trend")
         
         # Use Plotly for an interactive, easy-to-understand chart
@@ -71,18 +88,48 @@ def render_finance_agent(api_key=""):
         )
         
         # Show a clean modebar with only zoom in/out/reset
-        st.plotly_chart(fig, use_container_width=True, config={
+        st.plotly_chart(fig, width="stretch", config={
             'displayModeBar': True,
             'scrollZoom': True,
             'modeBarButtonsToRemove': ['pan2d', 'select2d', 'lasso2d', 'autoScale2d'],
             'displaylogo': False
         })
 
+        # Side-by-side additional charts
+        col_c1, col_c2 = st.columns(2)
+        with col_c1:
+            if 'department' in df.columns:
+                st.subheader("Expenses by Department")
+                dept_exp = df.groupby('department')['expense'].sum().reset_index()
+                fig_dept = px.pie(
+                    dept_exp,
+                    names='department',
+                    values='expense',
+                    color_discrete_sequence=["#064e3b", "#047857", "#059669", "#10b981", "#34d399", "#6ee7b7", "#a7f3d0"],
+                    hole=0.4
+                )
+                fig_dept.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=280)
+                st.plotly_chart(fig_dept, width="stretch")
+        with col_c2:
+            if 'expense_type' in df.columns:
+                st.subheader("Expenses by Category")
+                cat_exp = df.groupby('expense_type')['expense'].sum().reset_index()
+                fig_cat = px.bar(
+                    cat_exp,
+                    x='expense',
+                    y='expense_type',
+                    orientation='h',
+                    color='expense',
+                    color_continuous_scale='Greens'
+                )
+                fig_cat.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=280, yaxis={'categoryorder':'total ascending'}, showlegend=False)
+                st.plotly_chart(fig_cat, width="stretch")
+
         col1, col2 = st.columns(2)
         
         with col1:
             st.subheader("Forecast")
-            st.dataframe(forecast(df), hide_index=True, use_container_width=True)
+            st.dataframe(forecast(df), hide_index=True, width="stretch")
             
             var_df = variance(df.copy())
             an_df = detect_anomaly(var_df.copy())

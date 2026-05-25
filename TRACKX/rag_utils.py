@@ -5,7 +5,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 
-FAISS_INDEX_PATH = "Finance/data/faiss_index"
+FAISS_INDEX_PATH = os.path.join(os.path.dirname(__file__), "data", "faiss_index")
 
 from langchain_core.embeddings import Embeddings
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -34,15 +34,14 @@ class LocalOfflineEmbeddings(Embeddings):
 def get_embeddings():
     return LocalOfflineEmbeddings()
 
-def process_and_index_document(uploaded_file):
-    # Save the uploaded file to a temporary location
+def process_and_index_performance_doc(uploaded_file):
+    """Saves and indexes a uploaded file to the TrackX FAISS index."""
     temp_dir = tempfile.gettempdir()
     temp_file_path = os.path.join(temp_dir, uploaded_file.name)
     
     with open(temp_file_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
 
-    # Load based on file extension
     ext = os.path.splitext(uploaded_file.name)[1].lower()
     if ext == '.pdf':
         loader = PyPDFLoader(temp_file_path)
@@ -56,13 +55,11 @@ def process_and_index_document(uploaded_file):
 
     documents = loader.load()
     
-    # Add metadata for tracking
     for doc in documents:
         doc.metadata["source"] = uploaded_file.name
         
     os.remove(temp_file_path)
 
-    # Chunking
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
         chunk_overlap=200,
@@ -70,10 +67,9 @@ def process_and_index_document(uploaded_file):
     )
     chunks = text_splitter.split_documents(documents)
 
-    # Create or update FAISS index
     embeddings = get_embeddings()
     
-    if os.path.exists(FAISS_INDEX_PATH):
+    if os.path.exists(FAISS_INDEX_PATH) and os.path.exists(os.path.join(FAISS_INDEX_PATH, "index.faiss")):
         try:
             vectorstore = FAISS.load_local(FAISS_INDEX_PATH, embeddings, allow_dangerous_deserialization=True)
             vectorstore.add_documents(chunks)
@@ -84,12 +80,12 @@ def process_and_index_document(uploaded_file):
         os.makedirs(FAISS_INDEX_PATH, exist_ok=True)
         vectorstore = FAISS.from_documents(chunks, embeddings)
         
-    # Save local
     vectorstore.save_local(FAISS_INDEX_PATH)
     return len(chunks)
 
-def retrieve_context(query: str, k: int = 3):
-    if not os.path.exists(FAISS_INDEX_PATH):
+def retrieve_trackx_context(query: str, k: int = 3):
+    """Retrieves standard benchmarks, performance objectives, or general standards from FAISS."""
+    if not os.path.exists(FAISS_INDEX_PATH) or not os.path.exists(os.path.join(FAISS_INDEX_PATH, "index.faiss")):
         return []
         
     embeddings = get_embeddings()
@@ -98,5 +94,5 @@ def retrieve_context(query: str, k: int = 3):
         docs = vectorstore.similarity_search(query, k=k)
         return docs
     except Exception as e:
-        print(f"Error retrieving from FAISS: {e}")
+        print(f"Error retrieving from TrackX FAISS: {e}")
         return []

@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import os
 import uuid
+import plotly.express as px
 from datetime import datetime
 import google.generativeai as genai
 
@@ -69,9 +70,9 @@ def process_uploaded_files(uploaded_files):
 
 def render_customer_agent(api_key=""):
     st.markdown("""
-    <div style="padding: 2rem; background: linear-gradient(90deg, #f2994a 0%, #f2c94c 100%); color: white; border-radius: 10px; margin-bottom: 2rem; text-align: center;">
-        <h1>Customer Agent Dashboard</h1>
-        <p>AI-driven customer experience and support ticket analysis platform.</p>
+    <div style="padding: 2rem; background: linear-gradient(90deg, #f2994a 0%, #f2c94c 100%); color: white; border-radius: 10px; margin-bottom: 2rem; text-align: center; box-shadow: 0 4px 15px rgba(242, 153, 74, 0.2);">
+        <h1 style="color: white; margin: 0;">Customer Agent Dashboard</h1>
+        <p style="margin: 5px 0 0 0; opacity: 0.95;">AI-driven customer experience and support ticket analysis platform.</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -81,39 +82,127 @@ def render_customer_agent(api_key=""):
 
     model_choice = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
+    # Load customer tickets dataset by default
+    csv_path = "customer_support_tickets_120.csv"
+    if os.path.exists(csv_path):
+        try:
+            df_tickets = pd.read_csv(csv_path)
+        except Exception as e:
+            st.error(f"Failed to load customer tickets database: {e}")
+            df_tickets = pd.DataFrame()
+    else:
+        st.warning("Customer support tickets dataset 'customer_support_tickets_120.csv' not found.")
+        df_tickets = pd.DataFrame()
+
     # Tabs for different functionalities
-    tab1, tab2 = st.tabs(["Sentiment Analysis", "Query Handling Agent"])
+    tab1, tab2 = st.tabs(["Customer Feedback & Analytics", "Interactive Support Chatbot (RAG Agent)"])
 
     with tab1:
-        st.subheader("Recent Customer Feedback")
+        st.subheader("Support Ticket Database Insights")
         
-        # Base dummy data
-        dummy_df = pd.DataFrame({
-            "TicketID": ["TCK-101", "TCK-102", "TCK-103", "TCK-104", "TCK-105"],
-            "Customer": ["Acme Corp", "Globex", "Initech", "Umbrella Corp", "Soylent"],
-            "Issue": ["Login timeout error", "Billing discrepancy", "Feature request: Dark mode", "API rate limit exceeded", "App crashes on launch"],
-            "Status": ["Open", "Resolved", "Pending", "Open", "Critical"],
-            "Sentiment": ["Frustrated", "Neutral", "Positive", "Angry", "Angry"]
-        })
-        
-        # Load real tickets from agent tool usage
-        real_tickets = load_tickets()
-        if real_tickets:
-            real_df = pd.DataFrame(real_tickets)
-            dummy_data = pd.concat([real_df, dummy_df], ignore_index=True)
-        else:
-            dummy_data = dummy_df
+        if not df_tickets.empty:
+            # Metrics
+            total_tickets = len(df_tickets)
+            avg_csat = df_tickets['Customer Satisfaction Rating'].mean() if 'Customer Satisfaction Rating' in df_tickets.columns else 0.0
+            open_tickets = len(df_tickets[df_tickets['Ticket Status'].str.lower().str.contains('pending|open', na=False)]) if 'Ticket Status' in df_tickets.columns else 0
             
-        st.dataframe(dummy_data, use_container_width=True)
-        st.divider()
-        if st.button("Analyze Customer Sentiment", key="customer_analyze_btn"):
-            with st.spinner("AI Customer Agent is analyzing..."):
-                try:
-                    insights = run_customer_agent(api_key, dummy_data.to_string())
-                    st.markdown("### Customer Experience Insights")
-                    st.markdown(insights)
-                except Exception as e:
-                    st.error(f"Error: {e}")
+            s1, s2, s3 = st.columns(3)
+            with s1:
+                st.metric("Total Support Tickets", f"{total_tickets:,}")
+            with s2:
+                st.metric("Average Satisfaction Score", f"{avg_csat:.2f} / 5.0")
+            with s3:
+                st.metric("Pending/Open Tickets", f"{open_tickets:,}")
+                
+            # Plotly Charts
+            col_chart_1, col_chart_2, col_chart_3 = st.columns(3)
+            
+            with col_chart_1:
+                st.markdown("**Tickets by Product Purchased**")
+                if 'Product Purchased' in df_tickets.columns:
+                    prod_counts = df_tickets['Product Purchased'].value_counts().reset_index()
+                    prod_counts.columns = ['Product', 'Tickets']
+                    fig_prod = px.bar(
+                        prod_counts,
+                        x='Tickets',
+                        y='Product',
+                        orientation='h',
+                        color='Tickets',
+                        color_continuous_scale='Oranges'
+                    )
+                    fig_prod.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=250, yaxis={'categoryorder':'total ascending'}, showlegend=False)
+                    st.plotly_chart(fig_prod, width="stretch")
+                    
+            with col_chart_2:
+                st.markdown("**Priority Distribution**")
+                if 'Ticket Priority' in df_tickets.columns:
+                    prio_counts = df_tickets['Ticket Priority'].value_counts().reset_index()
+                    prio_counts.columns = ['Priority', 'Count']
+                    fig_prio = px.pie(
+                        prio_counts,
+                        names='Priority',
+                        values='Count',
+                        color_discrete_sequence=px.colors.sequential.Oranges_r,
+                        hole=0.4
+                    )
+                    fig_prio.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=250)
+                    st.plotly_chart(fig_prio, width="stretch")
+                    
+            with col_chart_3:
+                st.markdown("**Ticket Status Distribution**")
+                if 'Ticket Status' in df_tickets.columns:
+                    status_counts = df_tickets['Ticket Status'].value_counts().reset_index()
+                    status_counts.columns = ['Status', 'Count']
+                    fig_status = px.pie(
+                        status_counts,
+                        names='Status',
+                        values='Count',
+                        color_discrete_sequence=px.colors.qualitative.Pastel
+                    )
+                    fig_status.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=250)
+                    st.plotly_chart(fig_status, width="stretch")
+            
+            st.divider()
+            
+            st.subheader("🔍 Active Ticket Explorer & Filter")
+            ticket_search = st.text_input(
+                "Search tickets by Product, Customer Name, Subject or Status...", 
+                placeholder="e.g. Dell XPS, Critical, Refund",
+                key="customer_ticket_search"
+            )
+            
+            filtered_tickets = df_tickets
+            if ticket_search:
+                ts = ticket_search.lower()
+                mask = (
+                    filtered_tickets['Customer Name'].str.lower().str.contains(ts, na=False) |
+                    filtered_tickets['Product Purchased'].str.lower().str.contains(ts, na=False) |
+                    filtered_tickets['Ticket Subject'].str.lower().str.contains(ts, na=False) |
+                    filtered_tickets['Ticket Status'].str.lower().str.contains(ts, na=False) |
+                    filtered_tickets['Ticket Priority'].str.lower().str.contains(ts, na=False)
+                )
+                filtered_tickets = filtered_tickets[mask]
+                
+            st.write(f"Displaying **{len(filtered_tickets)}** support tickets")
+            st.dataframe(
+                filtered_tickets[['Ticket ID', 'Customer Name', 'Customer Email', 'Product Purchased', 'Ticket Subject', 'Ticket Priority', 'Ticket Status']].head(50),
+                width="stretch",
+                hide_index=True
+            )
+            
+            st.divider()
+            
+            st.subheader("🤖 AI Customer Experience Analyzer")
+            if st.button("Generate AI Customer Sentiment Report", key="customer_analyze_btn"):
+                with st.spinner("AI Customer Agent is analyzing..."):
+                    try:
+                        insights = run_customer_agent(api_key, filtered_tickets.head(30).to_string())
+                        st.markdown("### Customer Experience Insights")
+                        st.markdown(insights)
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+        else:
+            st.info("No tickets dataset found or loaded.")
 
     with tab2:
         st.subheader("Interactive Support Chatbot (RAG Agent)")
@@ -160,13 +249,13 @@ def render_customer_agent(api_key=""):
         st.caption("Suggested Questions:")
         cols = st.columns(3)
         with cols[0]:
-            if st.button("Update Payment", use_container_width=True):
+            if st.button("Update Payment", width="stretch"):
                 prompt_suggested = "How do I update my credit card?"
         with cols[1]:
-            if st.button("API 504 Error", use_container_width=True):
+            if st.button("API 504 Error", width="stretch"):
                 prompt_suggested = "The API is returning a 504 error consistently."
         with cols[2]:
-            if st.button("Check My Subscription", use_container_width=True):
+            if st.button("Check My Subscription", width="stretch"):
                 prompt_suggested = "Can you check the subscription for john@example.com?"
         
         # React to user input
