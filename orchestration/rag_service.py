@@ -10,6 +10,7 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 FAISS_HR_PATH = os.path.join(DATA_DIR, "faiss_hr")
 FAISS_CUSTOMER_PATH = os.path.join(DATA_DIR, "faiss_customer")
 FAISS_FINANCE_PATH = os.path.join(DATA_DIR, "faiss_finance")
+FAISS_TRACKX_PATH = os.path.join(DATA_DIR, "faiss_trackx")
 
 from langchain_core.embeddings import Embeddings
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -19,7 +20,7 @@ class LocalOfflineEmbeddings(Embeddings):
         # A vocabulary dimension of 512 features is excellent for lightweight local search
         self.vectorizer = TfidfVectorizer(max_features=512, stop_words='english')
         self._fitted = False
-        self.vectorizer.fit(["employee performance budget variance support ticket resume experience candidate client sales"])
+        self.vectorizer.fit(["employee performance budget variance support ticket resume experience candidate client sales work hours department job title salary productivity resign satisfaction"])
         
     def fit_on_texts(self, texts):
         if texts:
@@ -161,6 +162,49 @@ Expense Status: {status}"""
         ))
     return docs
 
+def build_trackx_documents():
+    csv_path = "Extended_Employee_Performance_and_Productivity_Data.csv"
+    if not os.path.exists(csv_path):
+        return []
+    
+    df = pd.read_csv(csv_path)
+    # limit to first 10,000 rows to keep FAISS search high-density and performant
+    df_sample = df.head(10000)
+    
+    docs = []
+    for _, row in df_sample.iterrows():
+        content = f"""Employee ID: {row.get('Employee_ID')}
+Department: {row.get('Department')}
+Gender: {row.get('Gender')}
+Age: {row.get('Age')}
+Job Title: {row.get('Job_Title')}
+Hire Date: {row.get('Hire_Date')}
+Years at Company: {row.get('Years_At_Company')}
+Education Level: {row.get('Education_Level')}
+Performance Score: {row.get('Performance_Score')}
+Monthly Salary: ${row.get('Monthly_Salary')}
+Work Hours per Week: {row.get('Work_Hours_Per_Week')}
+Projects Handled: {row.get('Projects_Handled')}
+Overtime Hours: {row.get('Overtime_Hours')}
+Sick Days Taken: {row.get('Sick_Days')}
+Remote Work Frequency: {row.get('Remote_Work_Frequency')}
+Team Size: {row.get('Team_Size')}
+Training Hours: {row.get('Training_Hours')}
+Promotions: {row.get('Promotions')}
+Employee Satisfaction Score: {row.get('Employee_Satisfaction_Score')}
+Resigned Status: {row.get('Resigned')}"""
+        
+        docs.append(Document(
+            page_content=content,
+            metadata={
+                "source": "Extended_Employee_Performance_and_Productivity_Data.csv",
+                "employee_id": str(row.get('Employee_ID')),
+                "department": str(row.get('Department')),
+                "job_title": str(row.get('Job_Title'))
+            }
+        ))
+    return docs
+
 def initialize_rag_databases(force_rebuild=False):
     os.makedirs(DATA_DIR, exist_ok=True)
     
@@ -185,6 +229,13 @@ def initialize_rag_databases(force_rebuild=False):
             print("Building Finance Central FAISS index...")
             load_or_create_index(FAISS_FINANCE_PATH, docs)
 
+    # 4. TrackX Index
+    if force_rebuild or not os.path.exists(os.path.join(FAISS_TRACKX_PATH, "index.faiss")):
+        docs = build_trackx_documents()
+        if docs:
+            print("Building TrackX Central FAISS index...")
+            load_or_create_index(FAISS_TRACKX_PATH, docs)
+
 def query_rag_database(agent_name, query, k=4):
     """Retrieve relevant context for a specific L2 Agent."""
     embeddings = get_embeddings()
@@ -195,6 +246,8 @@ def query_rag_database(agent_name, query, k=4):
         index_path = FAISS_CUSTOMER_PATH
     elif agent_name.upper() == "FINANCE":
         index_path = FAISS_FINANCE_PATH
+    elif agent_name.upper() == "TRACKX":
+        index_path = FAISS_TRACKX_PATH
     else:
         return []
         

@@ -20,6 +20,86 @@ from Finance.modules.anomaly import detect_anomaly
 from TRACKX.app import run_agent_orchestration
 from TRACKX.data import generate_synthetic_data
 
+def get_global_enterprise_summary():
+    summary_parts = []
+    
+    # 1. HR
+    hr_path = "resume_dataset_2.csv"
+    if os.path.exists(hr_path):
+        try:
+            df = pd.read_csv(hr_path)
+            role_str = ""
+            if 'Job_Role' in df.columns:
+                roles = [str(r) for r in df['Job_Role'].dropna().unique()]
+                role_str = f" Job roles represented: {', '.join(roles)}."
+            summary_parts.append(f"- **HR (resume_dataset_2.csv)**: Total candidate resumes in database: {len(df)}.{role_str}")
+        except Exception as e:
+            summary_parts.append(f"- **HR**: Error parsing database: {e}")
+    else:
+        summary_parts.append("- **HR**: Database file not found.")
+        
+    # 2. TrackX
+    trackx_path = "Extended_Employee_Performance_and_Productivity_Data.csv"
+    if os.path.exists(trackx_path):
+        try:
+            df = pd.read_csv(trackx_path)
+            avg_perf = df['Performance_Score'].mean() if 'Performance_Score' in df.columns else 0.0
+            avg_sat = df['Employee_Satisfaction_Score'].mean() if 'Employee_Satisfaction_Score' in df.columns else 0.0
+            avg_hours = df['Work_Hours_Per_Week'].mean() if 'Work_Hours_Per_Week' in df.columns else 0.0
+            summary_parts.append(
+                f"- **TrackX / Employee Performance (Extended_Employee_Performance_and_Productivity_Data.csv)**:\n"
+                f"  - Total Registered Employees: {len(df):,}\n"
+                f"  - Average Performance Rating: {avg_perf:.2f} / 5.0\n"
+                f"  - Average Employee Satisfaction Score: {avg_sat:.2f} / 5.0\n"
+                f"  - Average Work Hours per Week: {avg_hours:.2f} hours"
+            )
+        except Exception as e:
+            summary_parts.append(f"- **TrackX**: Error parsing database: {e}")
+    else:
+        summary_parts.append("- **TrackX**: Database file not found.")
+
+    # 3. Customer
+    cust_path = "customer_support_tickets_120.csv" if os.path.exists("customer_support_tickets_120.csv") else "customer_support_tickets.csv"
+    if os.path.exists(cust_path):
+        try:
+            df = pd.read_csv(cust_path)
+            total_tickets = len(df)
+            status_str = ""
+            df.columns = df.columns.str.strip()
+            status_col = [col for col in df.columns if 'status' in col.lower()]
+            if status_col:
+                status_counts = df[status_col[0]].value_counts().to_dict()
+                status_str = f" Ticket statuses: {status_counts}."
+            summary_parts.append(f"- **Customer Experience ({cust_path})**: Total support tickets logged: {total_tickets:,}.{status_str}")
+        except Exception as e:
+            summary_parts.append(f"- **Customer Experience**: Error parsing database: {e}")
+    else:
+        summary_parts.append("- **Customer Experience**: Database file not found.")
+
+    # 4. Finance
+    fin_path = "corporate_financial_analytics_data.csv"
+    if os.path.exists(fin_path):
+        try:
+            df = pd.read_csv(fin_path)
+            df.columns = df.columns.str.strip()
+            df.columns = df.columns.str.lower()
+            total_exp = df['expense'].sum() if 'expense' in df.columns else 0.0
+            total_bud = df['budget'].sum() if 'budget' in df.columns else 0.0
+            total_var = total_exp - total_bud
+            summary_parts.append(
+                f"- **Financial Analytics (corporate_financial_analytics_data.csv)**:\n"
+                f"  - Total Transactions: {len(df):,}\n"
+                f"  - Total Expense: ${total_exp:,.2f}\n"
+                f"  - Total Budget: ${total_bud:,.2f}\n"
+                f"  - Net Variance: ${total_var:,.2f} (Expenses under/over budget)"
+            )
+        except Exception as e:
+            summary_parts.append(f"- **Financial Analytics**: Error parsing database: {e}")
+    else:
+        summary_parts.append("- **Financial Analytics**: Database file not found.")
+
+    return "\n\n".join(summary_parts)
+
 class Orchestrator:
     def __init__(self, api_key):
         self.api_key = api_key
@@ -81,7 +161,7 @@ class Orchestrator:
         
         rag_context = ""
         retrieved_docs = []
-        if agent in ["HR", "Finance", "Customer"]:
+        if agent in ["HR", "Finance", "Customer", "TrackX"]:
             retrieved_docs = query_rag_database(agent, query, k=4)
             if retrieved_docs:
                 rag_context = "\n".join([f"- {doc.page_content}" for doc in retrieved_docs])
@@ -93,7 +173,7 @@ class Orchestrator:
             else:
                 yield {"step": "L2_RAG_EMPTY", "message": "No matching semantic context found in central vector store. Using general knowledge."}
         else:
-            yield {"step": "L2_RAG_SKIP", "message": "TrackX / General queries utilize integrated synthetic performance tables."}
+            yield {"step": "L2_RAG_SKIP", "message": "General queries utilize system-wide database statistics."}
 
         # 3. Invoke L2 Agent execution
         yield {"step": "L2_EXECUTION", "message": f"L2 Agent: Executing **{agent}** intelligence loop..."}
@@ -163,24 +243,57 @@ class Orchestrator:
                 
             elif agent == "TrackX":
                 # Holistic performance integration
-                hrms_df, erp_df, crm_df, merged_df = generate_synthetic_data()
-                answer = run_agent_orchestration(self.api_key, merged_df.to_string(), query_context=query)
-                sources = ["Synthetic HRMS", "Synthetic ERP", "Synthetic CRM"]
+                trackx_csv = "Extended_Employee_Performance_and_Productivity_Data.csv"
+                if os.path.exists(trackx_csv):
+                    df_perf = pd.read_csv(trackx_csv)
+                    summary_text = f"""
+                    Holistic Performance Dataset Stats:
+                    - Total Employees: {len(df_perf):,}
+                    - Avg Performance Rating: {df_perf['Performance_Score'].mean():.2f} / 5.0
+                    - Avg Employee Satisfaction Score: {df_perf['Employee_Satisfaction_Score'].mean():.2f} / 5.0
+                    - Avg Work Hours / Week: {df_perf['Work_Hours_Per_Week'].mean():.2f} hours
+                    - Avg Monthly Salary: ${df_perf['Monthly_Salary'].mean():.2f}
+                    - Total Promotions Given: {df_perf['Promotions'].sum():,}
+                    - Total Sick Days Taken: {df_perf['Sick_Days'].sum():,}
+                    - Average Years at Company: {df_perf['Years_At_Company'].mean():.2f} years
+                    - Department Performance Score Average:
+                    {df_perf.groupby('Department')['Performance_Score'].mean().to_string()}
+                    - Department Satisfaction Average:
+                    {df_perf.groupby('Department')['Employee_Satisfaction_Score'].mean().to_string()}
+                    """
+                else:
+                    hrms_df, erp_df, crm_df, merged_df = generate_synthetic_data()
+                    summary_text = merged_df.to_string()
+                
+                if rag_context:
+                    summary_text += f"\n\nRetrieved Employee Performance Records (FAISS RAG):\n{rag_context}"
+                
+                answer = run_agent_orchestration(self.api_key, summary_text, query_context=query)
+                sources = ["Extended_Employee_Performance_and_Productivity_Data.csv"] if os.path.exists(trackx_csv) else ["Synthetic HRMS", "Synthetic ERP", "Synthetic CRM"]
                 tools = ["trackx_performance_insights"]
                 confidence_val = "High"
                 
             else: # General Corporate Assistant
+                global_summary = get_global_enterprise_summary()
                 general_prompt = f"""
                 You are the master Enterprise AI Executive Assistant. 
-                Answer the following corporate question professionally, synthetically combining organizational pillars if applicable.
+                You have access to the global enterprise database summaries below.
+                
+                When the user asks for figures, counts, financials, or employee statistics:
+                1. You MUST provide exact numbers, counts, and metrics from the provided summaries.
+                2. Do NOT say the numbers are not available or suggest consulting the departments if the numbers are present in the summary below.
+                3. Be professional, direct, and factual. Answer both parts of any multi-part questions clearly.
+                
+                Global Enterprise Summaries:
+                {global_summary}
                 
                 User Query: {query}
                 """
                 response = self.model.generate_content(general_prompt)
                 answer = response.text
-                sources = ["Internal Knowledge Base"]
-                tools = ["llm_reasoning"]
-                confidence_val = "Medium"
+                sources = ["resume_dataset_2.csv", "Extended_Employee_Performance_and_Productivity_Data.csv", "customer_support_tickets_120.csv", "corporate_financial_analytics_data.csv"]
+                tools = ["global_data_synthesis"]
+                confidence_val = "High"
                 
             yield {
                 "step": "COMPLETED", 
